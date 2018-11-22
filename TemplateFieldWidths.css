@@ -1,0 +1,8 @@
+.tfw-container { display:flex; flex-wrap:wrap; overflow:hidden; margin:0 -4px -4px 0; }
+.tfw-item { float:left; flex-wrap:wrap; background-color:rgba(172,195,225,0.2); padding:3px 8px 8px; border-right:4px solid #fff; border-bottom:4px solid #fff; }
+.tfw-input { text-align:center; }
+.tfw-input label { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tfw-label { display:block; padding-bottom:2px; }
+.Inputfields .Inputfield_inputfield_widths .tfw-input input[type=number] { background-color:#fff !important; padding:2px 2px 2px 5px; height:30px; width:60px; }
+.Inputfields .Inputfield_inputfield_widths .tfw-input input[type=number]:focus { outline:none; }
+.tfw-fieldset { display:flex; flex-wrap:wrap; margin-top:8px; overflow:hidden; box-shadow:inset -4px -4px 0 0 #fff; border-top:4px solid #fff; border-left:4px solid #fff; }

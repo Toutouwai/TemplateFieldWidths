@@ -1,5 +1,5 @@
 .tfw-container { display:flex; flex-wrap:wrap; overflow:hidden; margin:0 -4px -4px 0; }
-.tfw-item { float:left; flex-wrap:wrap; background-color:rgba(172,195,225,0.2); padding:3px 8px 8px; border-right:4px solid #fff; border-bottom:4px solid #fff; }
+.tfw-item { float:left; flex-wrap:wrap; background-color:rgba(172,195,225,0.2); padding:3px 8px 8px; border-right:4px solid #fff; border-bottom:4px solid #fff; transition:width 0.3s; }
 .tfw-input { text-align:center; }
 .tfw-input label { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tfw-label { display:block; }

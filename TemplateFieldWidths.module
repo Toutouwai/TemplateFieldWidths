@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.1',
+			'version' => '0.1.2',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -87,16 +87,18 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 		$f = $this->wire()->modules->InputfieldMarkup;
 		$f->name = 'inputfield_widths';
 		$f->label = $this->_('Field widths');
+		$f->icon = 'arrows-h';
 		$f->value = $markup;
 		if($this->tfw_collapsed) $f->collapsed = Inputfield::collapsedYes;
 		$fg_fields = $form->getChildByName('fieldgroup_fields');
 		$form->insertAfter($f, $fg_fields);
 
-		// Load stylesheet
+		// Load stylesheet and script
 		$config = $this->wire()->config;
 		$info = $this->getModuleInfo();
 		$version = $info['version'];
 		$config->styles->add($config->urls->$this . "{$this}.css?v=$version");
+		$config->scripts->add($config->urls->$this . "{$this}.js?v=$version");
 	}
 
 	/**

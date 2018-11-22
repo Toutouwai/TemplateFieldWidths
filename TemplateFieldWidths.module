@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.0',
+			'version' => '0.1.1',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -65,20 +65,15 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 				$markup .= "</div></div>";
 				continue;
 			}
+			$no_width = $field->type == 'FieldtypeFieldsetTabOpen' || ($field->type == 'FieldtypeFieldsetGroup' && $field->useTabs === 1);
 			$f = $fieldgroup->getFieldContext($field);
 			$col_width = $f->columnWidth ?: 100;
 			$is_fieldset = in_array($field->type, array('FieldtypeFieldsetOpen', 'FieldtypeFieldsetTabOpen', 'FieldtypeFieldsetGroup'));
 			$id = 'tfw_' . $f->name;
 			$field_name = $is_fieldset ? "<strong>$f->name</strong>" : $f->name;
-			$markup .= "
-<div class='tfw-item' style='width:{$col_width}%'>
-	<div class='tfw-input'>
-		<label for='$id'>
-			<span class='tfw-label' title='$field->label'>$field_name</span>
-			<input id='$id' name='$id' type='number' min='0' max='100' value='$col_width'>
-		</label>
-	</div>
-";
+			$markup .= "<div class='tfw-item' style='width:{$col_width}%'><div class='tfw-input'><label><span class='tfw-label' title='$field->label'>$field_name</span>";
+			if(!$no_width) $markup .= "<input id='$id' name='$id' type='number' min='0' max='100' value='$col_width'>";
+			$markup .= "</label></div>";
 			if($is_fieldset) {
 				// Open fieldset
 				$markup .= "<div class='tfw-fieldset'>";

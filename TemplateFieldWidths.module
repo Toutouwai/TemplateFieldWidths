@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.2',
+			'version' => '0.1.3',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -58,29 +58,82 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 		$template = $this->getTemplate();
 		$fieldgroup = $template->fieldgroup;
 
-		$markup = "<div class='tfw-container'>";
+		// Tabs array
+		$tabs = array();
+		$content_tab_name = 'content';
+		$content_tab_label = $template->tabContent ?: $this->_('Content');
+		$tab_name = $content_tab_name;
+		$tab_label = $content_tab_label;
 		foreach($fieldgroup as $field) {
-			// Close fieldset
-			if($field->type == 'FieldtypeFieldsetClose') {
-				$markup .= "</div></div>";
+			if($field->type == 'FieldtypeFieldsetTabOpen' || ($field->type == 'FieldtypeFieldsetGroup' && $field->useTabs === 1)) {
+				$tab_name = $field->name;
+				$tab_label = $field->label;
 				continue;
 			}
-			$no_width = $field->type == 'FieldtypeFieldsetTabOpen' || ($field->type == 'FieldtypeFieldsetGroup' && $field->useTabs === 1);
-			$f = $fieldgroup->getFieldContext($field);
-			$col_width = $f->columnWidth ?: 100;
-			$is_fieldset = in_array($field->type, array('FieldtypeFieldsetOpen', 'FieldtypeFieldsetTabOpen', 'FieldtypeFieldsetGroup'));
-			$id = 'tfw_' . $f->name;
-			$field_name = $is_fieldset ? "<strong>$f->name</strong>" : $f->name;
-			$markup .= "<div class='tfw-item' style='width:{$col_width}%'><div class='tfw-input'><label><span class='tfw-label' title='$field->label'>$field_name</span>";
-			if(!$no_width) $markup .= "<input id='$id' name='$id' type='number' min='0' max='100' value='$col_width'>";
-			$markup .= "</label></div>";
-			if($is_fieldset) {
-				// Open fieldset
-				$markup .= "<div class='tfw-fieldset'>";
-			} else {
-				$markup .= "</div>";
+			if($field->type == 'FieldtypeFieldsetClose' && $field->name == "{$tab_name}_END") {
+				$tab_name = $content_tab_name;
+				$tab_label = $content_tab_label;
+				continue;
 			}
+			$tabs[$tab_name]['label'] = $tab_label;
+			$tabs[$tab_name]['fields'][] = $field;
 		}
+
+		// Open container
+		$markup = "<div class='tfw-container'>";
+
+		// Tabs
+		$markup .= "<ul class='tfw-tabs'>";
+		foreach($tabs as $tab_name => $tab_data) {
+			$active = $tab_name === 'content' ? ' active' : '';
+			$markup .= "<li class='tfw-tab{$active}' data-tab='tfw-{$tab_name}'>{$tab_data['label']}</li>";
+		}
+		$markup .= "</ul>";
+
+		// Tab content
+		$markup .= "<ul class='tfw-tabs-content'>";
+		foreach($tabs as $tab_name => $tab_data) {
+			$active = $tab_name === 'content' ? ' active' : '';
+			$markup .= "<li id='tfw-{$tab_name}' class='tfw-tab-content{$active}'>";
+			$markup .= "<div class='tfw-tab-wrap'>";
+			foreach($tab_data['fields'] as $field) {
+				// Close fieldset
+				if($field->type == 'FieldtypeFieldsetClose') {
+					$markup .= "</div></div>";
+					continue;
+				}
+				$f = $fieldgroup->getFieldContext($field);
+				$col_width = $f->columnWidth ?: 100;
+				$is_fieldset = in_array($field->type, array('FieldtypeFieldsetOpen', 'FieldtypeFieldsetGroup'));
+				$id = 'tfw_' . $f->name;
+				$field_name = $is_fieldset ? "<strong>$f->name</strong>" : $f->name;
+				$orig_width_markup = '';
+				if($this->show_original_width) {
+					$orig_width = $field->columnWidth ?: 100;
+					$orig_width_markup = "<span class='orig-width'>{$orig_width}%</span>";
+				}
+				$markup .= <<<EOT
+<div class='tfw-item' style='width:{$col_width}%'>
+	<label>
+		<span class='tfw-label' title='$field->label'>$field_name</span>
+		<div class='tfw-input'>
+			<input id='$id' name='$id' type='number' min='0' max='100' value='$col_width'>{$orig_width_markup}
+		</div>
+</label>
+EOT;
+				if($is_fieldset) {
+					// Open fieldset
+					$markup .= "<div class='tfw-fieldset'>";
+				} else {
+					$markup .= "</div>";
+				}
+			}
+			$markup .= "</div>";
+			$markup .= "</li>";
+		}
+		$markup .= "</ul>";
+
+		// Close container
 		$markup .= "</div>";
 		
 		/* @var InputfieldMarkup $f */
@@ -136,6 +189,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	 * @param InputfieldWrapper $inputfields
 	 */
 	public function getModuleConfigInputfields($inputfields) {
+
 		/* @var InputfieldRadios $f */
 		$f = $this->wire()->modules->InputfieldRadios;
 		$f_name = 'tfw_collapsed';
@@ -145,7 +199,18 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 		$f->addOption(0, $this->_('Open'));
 		$f->optionColumns = 1;
 		$f->value = $this->$f_name;
+		$f->columnWidth = 50;
 		$inputfields->add($f);
+
+		/* @var InputfieldCheckbox $f */
+		$f = $this->wire()->modules->InputfieldCheckbox;
+		$f_name = 'show_original_width';
+		$f->name = $f_name;
+		$f->label = $this->_("Show each field's original width");
+		$f->checked = $this->$f_name === 1 ? 'checked' : '';
+		$f->columnWidth = 50;
+		$inputfields->add($f);
+
 	}
 	
 }

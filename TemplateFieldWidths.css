@@ -1,9 +1,18 @@
-.tfw-container { display:flex; flex-wrap:wrap; overflow:hidden; margin:0 -4px -4px 0; }
-.tfw-item { float:left; flex-wrap:wrap; background-color:rgba(172,195,225,0.2); padding:3px 8px 8px; border-right:4px solid #fff; border-bottom:4px solid #fff; transition:width 0.3s; }
-.tfw-input { text-align:center; }
-.tfw-input label { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tfw-label { display:block; }
+/* Tabs */
+ul.tfw-tabs, ul.tfw-tabs-content { list-style:none; padding:0; margin:0; }
+ul.tfw-tabs-content { margin-top:-1px; }
+li.tfw-tab { display:inline-block; padding:10px 20px; color:#e83561; position:relative; z-index:2; cursor:pointer; margin:0; }
+li.tfw-tab.active { border:1px solid #d9e1ea; border-bottom-color:#fff; border-radius:4px 4px 0 0; color:#333; background:#fff; }
+li.tfw-tab-content { display:none; padding:15px; border:1px solid #d9e1ea; margin:0; }
+li.tfw-tab-content.active { display:block; }
+.tfw-tab-wrap { margin:0 -4px -4px 0; display:flex; flex-wrap:wrap; overflow:hidden; }
+
+/* Field items */
+.tfw-item { float:left; flex-wrap:wrap; background-color:rgba(172,195,225,0.2); padding:3px 8px 8px; border-right:4px solid #fff; border-bottom:4px solid #fff; transition:width 0.3s; text-align:center; }
+.tfw-item label { display:block; }
+.tfw-label { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tfw-input { margin-top:2px !important; }
+.tfw-input .orig-width { display:inline-block; line-height:30px; height:30px; padding-left:5px; vertical-align:top; color:#8d939e; }
 .Inputfields .Inputfield_inputfield_widths .tfw-input input[type=number] { background-color:#fff !important; padding:2px 2px 2px 5px; height:30px; width:60px; }
 .Inputfields .Inputfield_inputfield_widths .tfw-input input[type=number]:focus { outline:none; }
 .tfw-fieldset { display:flex; flex-wrap:wrap; margin-top:8px; overflow:hidden; box-shadow:inset -4px -4px 0 0 #fff; border-top:4px solid #fff; border-left:4px solid #fff; }
-.tfw-label + input[type=number] { margin-top:2px !important; }

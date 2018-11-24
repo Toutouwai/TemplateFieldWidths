@@ -13,7 +13,7 @@
 			$(this).closest('.tfw-item').css('width', width + '%');
 		});
 
-		// Navigate between tabs when via tab key
+		// Navigate between tabs via TAB key
 		$(document).on('keydown', '.tfw-input input', function(e) {
 			// Return if keydown was not TAB
 			if(e.keyCode !== 9) return;

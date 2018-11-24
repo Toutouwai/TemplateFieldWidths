@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.4',
+			'version' => '0.1.5',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',

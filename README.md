@@ -2,7 +2,7 @@
 
 A module for ProcessWire CMS/CMF. Adds a "Field widths" field to Edit Template that allows you to quickly set the widths of inputfields in the template.
 
-![screencast](https://user-images.githubusercontent.com/1538852/48965124-2e386b00-f01c-11e8-8b76-93bf4908ace8.gif)
+![screencast](https://user-images.githubusercontent.com/1538852/48973670-a8fb9780-f0a9-11e8-8b03-8604b3b09d3a.gif)
 
 ## Why?
 

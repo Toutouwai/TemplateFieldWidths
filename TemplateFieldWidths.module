@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.3',
+			'version' => '0.1.4',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -67,7 +67,8 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 		foreach($fieldgroup as $field) {
 			if($field->type == 'FieldtypeFieldsetTabOpen' || ($field->type == 'FieldtypeFieldsetGroup' && $field->useTabs === 1)) {
 				$tab_name = $field->name;
-				$tab_label = $field->label;
+				$f = $fieldgroup->getFieldContext($field);
+				$tab_label = $f->label ?: $tab_name;
 				continue;
 			}
 			if($field->type == 'FieldtypeFieldsetClose' && $field->name == "{$tab_name}_END") {

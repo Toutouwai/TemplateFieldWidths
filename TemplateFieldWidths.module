@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.6',
+			'version' => '0.1.7',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -114,7 +114,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 					$orig_width = $field->columnWidth ?: 100;
 					$orig_width_markup = "<span class='orig-width'>{$orig_width}%</span>";
 				}
-				$primary_identifier = $f->{$this->field_identifier};
+				$primary_identifier = $this->field_identifier === 'name' ? $f->name : ($f->label ?: $f->name) ;
 				if($is_fieldset) $primary_identifier = "<strong>$primary_identifier</strong>";
 				$secondary_identifier = $this->field_identifier === 'name' ? $f->label : $f->name;
 				$markup .= <<<EOT

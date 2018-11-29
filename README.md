@@ -2,7 +2,7 @@
 
 A module for ProcessWire CMS/CMF. Adds a "Field widths" field to Edit Template that allows you to quickly set the widths of inputfields in the template.
 
-![screencast](https://user-images.githubusercontent.com/1538852/48973670-a8fb9780-f0a9-11e8-8b03-8604b3b09d3a.gif)
+![screencast](https://user-images.githubusercontent.com/1538852/49207167-0cbef100-f419-11e8-965a-ca46b4f256d1.gif)
 
 ## Why?
 
@@ -14,6 +14,6 @@ When setting up a new template or trying out different field layouts I find it a
 
 ## Config options
 
-You can set the default presentation of the "Field widths" field to collapsed or open.
-
-You can choose to show the original field width next to the template context field width.
+* You can set the default presentation of the "Field widths" field to collapsed or open.
+* You can choose Name or Label as the primary identifier shown for the field. The unchosen alternative will become the title attribute shown on hover.
+* You can choose to show the original field width next to the template context field width.

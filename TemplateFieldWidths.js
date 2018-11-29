@@ -13,6 +13,18 @@
 			$(this).closest('.tfw-item').css('width', width + '%');
 		});
 
+		// Drag resizing
+		$('.tfw-item').resizable({
+			containment: '.InputfieldContent',
+			handles: 'e',
+			resize: function(event, ui) {
+				var percentage = Math.ceil(ui.size.width / ui.element.parent().outerWidth() * 100);
+				percentage = Math.min(Math.max(parseInt(percentage), 1), 100);
+				ui.element.children('label').find('input').val(percentage);
+				ui.element[0].style.width = percentage + '%';
+			}
+		});
+
 		// Navigate between tabs via TAB key
 		$(document).on('keydown', '.tfw-input input', function(e) {
 			// Return if keydown was not TAB

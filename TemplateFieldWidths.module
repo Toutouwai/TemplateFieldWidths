@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.5',
+			'version' => '0.1.6',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -36,7 +36,9 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	 * Ready
 	 */
 	public function __construct() {
+		parent::__construct();
 		$this->tfw_collapsed = 1;
+		$this->field_identifier = 'name';
 	}
 
 	/**
@@ -107,16 +109,18 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 				$col_width = $f->columnWidth ?: 100;
 				$is_fieldset = in_array($field->type, array('FieldtypeFieldsetOpen', 'FieldtypeFieldsetGroup'));
 				$id = 'tfw_' . $f->name;
-				$field_name = $is_fieldset ? "<strong>$f->name</strong>" : $f->name;
 				$orig_width_markup = '';
 				if($this->show_original_width) {
 					$orig_width = $field->columnWidth ?: 100;
 					$orig_width_markup = "<span class='orig-width'>{$orig_width}%</span>";
 				}
+				$primary_identifier = $f->{$this->field_identifier};
+				if($is_fieldset) $primary_identifier = "<strong>$primary_identifier</strong>";
+				$secondary_identifier = $this->field_identifier === 'name' ? $f->label : $f->name;
 				$markup .= <<<EOT
 <div class='tfw-item' style='width:{$col_width}%'>
 	<label>
-		<span class='tfw-label' title='$field->label'>$field_name</span>
+		<span class='tfw-label' title='$secondary_identifier'>$primary_identifier</span>
 		<div class='tfw-input'>
 			<input id='$id' name='$id' type='number' min='0' max='100' value='$col_width'>{$orig_width_markup}
 		</div>
@@ -200,7 +204,19 @@ EOT;
 		$f->addOption(0, $this->_('Open'));
 		$f->optionColumns = 1;
 		$f->value = $this->$f_name;
-		$f->columnWidth = 50;
+		$f->columnWidth = 40;
+		$inputfields->add($f);
+
+		/* @var InputfieldRadios $f */
+		$f = $this->wire()->modules->InputfieldRadios;
+		$f_name = 'field_identifier';
+		$f->name = $f_name;
+		$f->label = $this->_('Field primary identifier');
+		$f->addOption('name', $this->_('Name'));
+		$f->addOption('label', $this->_('Label'));
+		$f->optionColumns = 1;
+		$f->value = $this->$f_name;
+		$f->columnWidth = 30;
 		$inputfields->add($f);
 
 		/* @var InputfieldCheckbox $f */
@@ -209,7 +225,7 @@ EOT;
 		$f->name = $f_name;
 		$f->label = $this->_("Show each field's original width");
 		$f->checked = $this->$f_name === 1 ? 'checked' : '';
-		$f->columnWidth = 50;
+		$f->columnWidth = 30;
 		$inputfields->add($f);
 
 	}

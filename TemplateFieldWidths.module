@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.7',
+			'version' => '0.1.8',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -122,7 +122,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	<label>
 		<span class='tfw-label' title='$secondary_identifier'>$primary_identifier</span>
 		<div class='tfw-input'>
-			<input id='$id' name='$id' type='number' min='0' max='100' value='$col_width'>{$orig_width_markup}
+			<input id='$id' name='$id' type='number' min='10' max='100' value='$col_width'>{$orig_width_markup}
 		</div>
 </label>
 EOT;

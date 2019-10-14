@@ -14,6 +14,8 @@ When setting up a new template or trying out different field layouts I find it a
 
 ## Config options
 
-* You can set the default presentation of the "Field widths" field to collapsed or open.
+* You can set the default presentation of the "Field widths" field to collapsed or open. 
+    * Field widths entered into the Template Field Widths inputfield are only applied if the Edit Template form is submitted with the Template Field Widths inputfield in an opened state. 
+    * "Collapsed" is the recommended setting if you think you might also use core inputs for setting field widths in a template context.
 * You can choose Name or Label as the primary identifier shown for the field. The unchosen alternative will become the title attribute shown on hover.
 * You can choose to show the original field width next to the template context field width.

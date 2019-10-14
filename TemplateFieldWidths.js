@@ -1,6 +1,17 @@
 (function($) {
 
-	$(function(){
+	$(function() {
+
+		var $tfw_inputfield = $('#Inputfield_inputfield_widths');
+
+		// Detect inputfield open/close and set hidden field value
+		var $visibility_input = $('#tfw_open');
+		$tfw_inputfield.on('closed', function() {
+			$visibility_input.val(0);
+		});
+		$tfw_inputfield.on('opened', function() {
+			$visibility_input.val(1);
+		});
 
 		// Tab click
 		$('.tfw-tab').click(function() {
@@ -8,7 +19,7 @@
 		});
 
 		// Adjust preview field widths on input change
-		$('#Inputfield_inputfield_widths input').on('change', function(event) {
+		$tfw_inputfield.find('input').on('change', function(event) {
 			var width = $(this).val();
 			$(this).closest('.tfw-item').css('width', width + '%');
 		});

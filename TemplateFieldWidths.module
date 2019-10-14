@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.9',
+			'version' => '0.1.10',
 			'summary' => 'Quickly set the widths of inputfields in a template.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -85,8 +85,12 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 			$tabs[$tab_name]['fields'][] = $field;
 		}
 
+		// Hidden input to record field opened/closed state
+		$val = (int) !$this->tfw_collapsed;
+		$markup = "<input type='hidden' id='tfw_open' name='tfw_open' value='$val'>";
+
 		// Open container
-		$markup = "<div class='tfw-container'>";
+		$markup .= "<div class='tfw-container'>";
 
 		// Tabs
 		$markup .= "<ul class='tfw-tabs'>";
@@ -145,7 +149,7 @@ EOT;
 		$markup .= "</div>";
 
 		/* @var InputfieldMarkup $f */
-		$f = $this->wire()->modules->InputfieldMarkup;
+		$f = $this->wire('modules')->InputfieldMarkup;
 		$f->name = 'inputfield_widths';
 		$f->label = $this->_('Field widths');
 		$f->icon = 'arrows-h';
@@ -154,7 +158,7 @@ EOT;
 		$form->insertAfter($f, $fg_fields);
 
 		// Load stylesheet and script
-		$config = $this->wire()->config;
+		$config = $this->wire('config');
 		$info = $this->getModuleInfo();
 		$version = $info['version'];
 		$config->styles->add($config->urls->$this . "{$this}.css?v=$version");
@@ -169,14 +173,17 @@ EOT;
 	protected function applyWidths(HookEvent $event) {
 		$template = $this->getTemplate();
 		$fieldgroup = $template->fieldgroup;
-		foreach($this->wire()->input->post as $key => $value) {
+		$input = $this->wire('input');
+		// Return early if module inputfield was not open
+		if(!$input->post->tfw_open) return;
+		foreach($input->post as $key => $value) {
 			if(substr($key, 0, 4) !== 'tfw_') continue;
 			$field_name = substr($key, 4);
 			$col_width = (int) $value;
 			$f = $fieldgroup->getFieldContext($field_name);
 			if(!$f || $f->columnWidth === $col_width || (!$f->columnWidth && $col_width === 100)) continue;
 			$f->columnWidth = $col_width;
-			$this->wire()->fields->saveFieldgroupContext($f, $fieldgroup);
+			$this->wire('fields')->saveFieldgroupContext($f, $fieldgroup);
 		}
 	}
 
@@ -186,8 +193,8 @@ EOT;
 	 * @return Template|null
 	 */
 	protected function getTemplate() {
-		$template_id = (int) $this->wire()->input->post->id ?: (int) $this->wire()->input->get->id;
-		return $this->wire()->templates->get($template_id);
+		$template_id = (int) $this->wire('input')->post->id ?: (int) $this->wire('input')->get->id;
+		return $this->wire('templates')->get($template_id);
 	}
 
 	/**
@@ -196,12 +203,14 @@ EOT;
 	 * @param InputfieldWrapper $inputfields
 	 */
 	public function getModuleConfigInputfields($inputfields) {
+		$modules = $this->wire('modules');
 
 		/* @var InputfieldRadios $f */
-		$f = $this->wire()->modules->InputfieldRadios;
+		$f = $modules->InputfieldRadios;
 		$f_name = 'tfw_collapsed';
 		$f->name = $f_name;
 		$f->label = $this->_('Presentation of Template Field Widths field');
+		$f->notes = $this->_('"Collapsed" recommended if you might also use core inputs for setting field widths.');
 		$f->addOption(1, $this->_('Collapsed'));
 		$f->addOption(0, $this->_('Open'));
 		$f->optionColumns = 1;
@@ -210,7 +219,7 @@ EOT;
 		$inputfields->add($f);
 
 		/* @var InputfieldRadios $f */
-		$f = $this->wire()->modules->InputfieldRadios;
+		$f = $modules->InputfieldRadios;
 		$f_name = 'field_identifier';
 		$f->name = $f_name;
 		$f->label = $this->_('Field primary identifier');
@@ -222,7 +231,7 @@ EOT;
 		$inputfields->add($f);
 
 		/* @var InputfieldCheckbox $f */
-		$f = $this->wire()->modules->InputfieldCheckbox;
+		$f = $modules->InputfieldCheckbox;
 		$f_name = 'show_original_width';
 		$f->name = $f_name;
 		$f->label = $this->_("Show each field's original width");

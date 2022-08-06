@@ -23,10 +23,6 @@ Note: widths are only saved if the edit form is submitted with the "Field widths
 
 When setting up a new template/repeater or trying out different field layouts I find it a bit slow and tedious to have to open each field individually in a modal just to set the width. This module speeds up the process.
 
-## Installation
-
-[Install](http://modules.processwire.com/install-uninstall/) the Template Field Widths module.
-
 ## Config options
 
 * You can set the default presentation of the "Field widths" field to collapsed or open. 

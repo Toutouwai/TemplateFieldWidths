@@ -23,12 +23,12 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.1.10',
-			'summary' => 'Quickly set the widths of inputfields in a template.',
+			'version' => '0.2.0',
+			'summary' => 'Quickly set the widths of inputfields in a template, Repeater field, or Repeater Matrix field.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
 			'autoload' => 'template=admin',
-			'requires' => 'ProcessWire>=3.0.0'
+			'requires' => 'ProcessWire>=3.0.187, PHP>=5.4.0'
 		);
 	}
 
@@ -45,16 +45,82 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	 * Ready
 	 */
 	public function ready() {
-		$this->addHookAfter('ProcessTemplate::buildEditForm', $this, 'modifyEditForm');
-		$this->addHookBefore('ProcessTemplate::executeSave', $this, 'applyWidths');
+		$this->addHookAfter('ProcessTemplate::buildEditForm', $this, 'addProcessTemplateControls');
+		$this->addHookAfter('FieldtypeRepeater::getConfigInputfields', $this, 'addProcessFieldControls');
+		$this->addHookBefore('ProcessTemplate::executeSave', $this, 'beforeTemplateSave');
+		$this->addHookBefore('ProcessField::executeSave', $this, 'beforeFieldSave');
 	}
 
 	/**
-	 * Add field to template edit form
+	 * Load CSS and JS assets
+	 */
+	protected function loadAssets() {
+		$config = $this->wire()->config;
+		$info = $this->getModuleInfo();
+		$version = $info['version'];
+		$config->styles->add($config->urls->$this . "{$this}.css?v=$version");
+		$config->scripts->add($config->urls->$this . "{$this}.js?v=$version");
+	}
+
+	/**
+	 * Return fields width controls markup
+	 *
+	 * @param array|Fieldgroup $fields
+	 * @param Fieldgroup $fieldgroup
+	 */
+	protected function fieldWidthsMarkup($fields, $fieldgroup, $matrix_type = null) {
+		$markup = '';
+		foreach($fields as $field) {
+			// Close fieldset
+			if($field->type == 'FieldtypeFieldsetClose') {
+				$markup .= "</div></div>";
+				continue;
+			}
+			// Get field in template or matrix type context
+			if($matrix_type) {
+				$f = $fieldgroup->getFieldContext($field, "matrix$matrix_type");
+			} else {
+				$f = $fieldgroup->getFieldContext($field);
+			}
+			$col_width = $f->columnWidth ?: 100;
+			$is_fieldset = in_array($field->type, ['FieldtypeFieldsetOpen', 'FieldtypeFieldsetGroup']);
+			// Use hyphens to separate pieces in the id/name attribute because PW field names cannot include hyphens
+			// This lets us explode on hyphens later to get the original pieces
+			$id = 'tfw-' . $f->name;
+			if($matrix_type) $id .= "-$matrix_type";
+			$orig_width_markup = '';
+			if($this->show_original_width) {
+				$orig_width = $field->columnWidth ?: 100;
+				$orig_width_markup = "<span class='orig-width'>{$orig_width}%</span>";
+			}
+			$primary_identifier = $this->field_identifier === 'name' ? $f->name : ($f->label ?: $f->name) ;
+			if($is_fieldset) $primary_identifier = "<strong>$primary_identifier</strong>";
+			$secondary_identifier = $this->field_identifier === 'name' ? $f->label : $f->name;
+			$markup .= <<<EOT
+<div class='tfw-item' style='width:{$col_width}%'>
+	<label>
+		<span class='tfw-label' title='$secondary_identifier'>$primary_identifier</span>
+		<div class='tfw-input'>
+			<input id='$id' name='$id' type='number' min='10' max='100' value='$col_width'>{$orig_width_markup}
+		</div>
+</label>
+EOT;
+			if($is_fieldset) {
+				// Open fieldset
+				$markup .= "<div class='tfw-fieldset'>";
+			} else {
+				$markup .= "</div>";
+			}
+		}
+		return $markup;
+	}
+
+	/**
+	 * Add controls to ProcessTemplate
 	 *
 	 * @param HookEvent $event
 	 */
-	protected function modifyEditForm(HookEvent $event) {
+	protected function addProcessTemplateControls(HookEvent $event) {
 		/* @var InputfieldForm $form */
 		$form = $event->return;
 		$template = $this->getTemplate();
@@ -64,7 +130,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 		if(!$fg_fields) return;
 
 		// Tabs array
-		$tabs = array();
+		$tabs = [];
 		$content_tab_name = 'content';
 		$content_tab_label = $template->tabContent ?: $this->_('Content');
 		$tab_name = $content_tab_name;
@@ -87,7 +153,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 
 		// Hidden input to record field opened/closed state
 		$val = (int) !$this->tfw_collapsed;
-		$markup = "<input type='hidden' id='tfw_open' name='tfw_open' value='$val'>";
+		$markup = "<input type='hidden' class='tfw-open' name='tfw_open' value='$val'>";
 
 		// Open container
 		$markup .= "<div class='tfw-container'>";
@@ -105,41 +171,8 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 		foreach($tabs as $tab_name => $tab_data) {
 			$active = $tab_name === 'content' ? ' active' : '';
 			$markup .= "<li id='tfw-{$tab_name}' class='tfw-tab-content{$active}'>";
-			$markup .= "<div class='tfw-tab-wrap'>";
-			foreach($tab_data['fields'] as $field) {
-				// Close fieldset
-				if($field->type == 'FieldtypeFieldsetClose') {
-					$markup .= "</div></div>";
-					continue;
-				}
-				$f = $fieldgroup->getFieldContext($field);
-				$col_width = $f->columnWidth ?: 100;
-				$is_fieldset = in_array($field->type, array('FieldtypeFieldsetOpen', 'FieldtypeFieldsetGroup'));
-				$id = 'tfw_' . $f->name;
-				$orig_width_markup = '';
-				if($this->show_original_width) {
-					$orig_width = $field->columnWidth ?: 100;
-					$orig_width_markup = "<span class='orig-width'>{$orig_width}%</span>";
-				}
-				$primary_identifier = $this->field_identifier === 'name' ? $f->name : ($f->label ?: $f->name) ;
-				if($is_fieldset) $primary_identifier = "<strong>$primary_identifier</strong>";
-				$secondary_identifier = $this->field_identifier === 'name' ? $f->label : $f->name;
-				$markup .= <<<EOT
-<div class='tfw-item' style='width:{$col_width}%'>
-	<label>
-		<span class='tfw-label' title='$secondary_identifier'>$primary_identifier</span>
-		<div class='tfw-input'>
-			<input id='$id' name='$id' type='number' min='10' max='100' value='$col_width'>{$orig_width_markup}
-		</div>
-</label>
-EOT;
-				if($is_fieldset) {
-					// Open fieldset
-					$markup .= "<div class='tfw-fieldset'>";
-				} else {
-					$markup .= "</div>";
-				}
-			}
+			$markup .= "<div class='tfw-items-wrap'>";
+			$markup .= $this->fieldWidthsMarkup($tab_data['fields'], $fieldgroup);
 			$markup .= "</div>";
 			$markup .= "</li>";
 		}
@@ -149,41 +182,99 @@ EOT;
 		$markup .= "</div>";
 
 		/* @var InputfieldMarkup $f */
-		$f = $this->wire('modules')->InputfieldMarkup;
-		$f->name = 'inputfield_widths';
+		$f = $this->wire()->modules->get('InputfieldMarkup');
+		$f->name = 'tfw_widths';
+		$f->wrapAttr('data-tfw', 1);
 		$f->label = $this->_('Field widths');
 		$f->icon = 'arrows-h';
 		$f->value = $markup;
 		if($this->tfw_collapsed) $f->collapsed = Inputfield::collapsedYes;
 		$form->insertAfter($f, $fg_fields);
 
-		// Load stylesheet and script
-		$config = $this->wire('config');
-		$info = $this->getModuleInfo();
-		$version = $info['version'];
-		$config->styles->add($config->urls->$this . "{$this}.css?v=$version");
-		$config->scripts->add($config->urls->$this . "{$this}.js?v=$version");
+		// Load CSS and JS assets
+		$this->loadAssets();
 	}
 
 	/**
-	 * Apply field widths
+	 * Add controls to ProcessField (Repeater)
 	 *
 	 * @param HookEvent $event
 	 */
-	protected function applyWidths(HookEvent $event) {
-		$template = $this->getTemplate();
-		$fieldgroup = $template->fieldgroup;
-		$input = $this->wire('input');
-		// Return early if module inputfield was not open
-		if(!$input->post->tfw_open) return;
-		foreach($input->post as $key => $value) {
-			if(substr($key, 0, 4) !== 'tfw_') continue;
-			$field_name = substr($key, 4);
-			$col_width = (int) $value;
-			$f = $fieldgroup->getFieldContext($field_name);
-			if(!$f || $f->columnWidth === $col_width || (!$f->columnWidth && $col_width === 100)) continue;
-			$f->columnWidth = $col_width;
-			$this->wire('fields')->saveFieldgroupContext($f, $fieldgroup);
+	protected function addProcessFieldControls(HookEvent $event) {
+		$field = $event->arguments(0);
+		$wrapper = $event->return;
+
+		// If Repeater or FieldsetPage
+		if(in_array($field->type, ['FieldtypeRepeater', 'FieldtypeFieldsetPage'])) {
+
+			// Get the Repeater fields config field
+			$repeater_fields_config = $wrapper->getChildByName('repeaterFields');
+			if(!$repeater_fields_config) return;
+
+			// Get template of Repeater
+			/** @var Template $template */
+			$template = $field->type->getRepeaterTemplate($field);
+			$fieldgroup = $template->fieldgroup;
+
+			// Hidden input to record field opened/closed state
+			$val = (int) !$this->tfw_collapsed;
+			$markup = "<input type='hidden' class='tfw-open' name='tfw_open' value='$val'>";
+
+			// Open container
+			$markup .= "<div class='tfw-items-wrap'>";
+			$markup .= $this->fieldWidthsMarkup($fieldgroup, $fieldgroup);
+			$markup .= "</div>";
+
+			/* @var InputfieldMarkup $f */
+			$f = $this->wire()->modules->get('InputfieldMarkup');
+			$f->name = 'tfw_widths';
+			$f->wrapAttr('data-tfw', 1);
+			$f->label = $this->_('Field widths');
+			$f->icon = 'arrows-h';
+			$f->value = $markup;
+			if($this->tfw_collapsed) $f->collapsed = Inputfield::collapsedYes;
+			$wrapper->insertAfter($f, $repeater_fields_config);
+
+			// Load CSS and JS assets
+			$this->loadAssets();
+
+		}
+		// If Repeater Matrix
+		elseif($field->type == 'FieldtypeRepeaterMatrix') {
+
+			// Return early if RepeaterMatrix < v5 which introduced getMatrixTypesInfo() method
+			if(!method_exists($field->type, 'getMatrixTypesInfo')) return;
+
+			/** @var Template $template */
+			$template = $field->type->getMatrixTemplate($field);
+			$matrix_info = $field->type->getMatrixTypesInfo();
+			foreach($matrix_info as $type_name => $type_info) {
+				// Get 'Fields' field in the matrix type config
+				$m_fields = $wrapper->getChildByName("matrix{$type_info['type']}_fields");
+				if(!$m_fields) continue;
+
+				// Hidden input to record field opened/closed state
+				$val = (int) !$this->tfw_collapsed;
+				$markup = "<input type='hidden' class='tfw-open' name='tfw_open-{$type_info['type']}' value='$val'>";
+
+				// Open container
+				$markup .= "<div class='tfw-items-wrap'>";
+				$markup .= $this->fieldWidthsMarkup($type_info['fields'], $template->fieldgroup, $type_info['type']);
+				$markup .= "</div>";
+
+				/* @var InputfieldMarkup $f */
+				$f = $this->wire()->modules->get('InputfieldMarkup');
+				$f->name = "tfw_widths_{$type_info['type']}";
+				$f->wrapAttr('data-tfw', 1);
+				$f->label = $this->_('Field widths');
+				$f->icon = 'arrows-h';
+				$f->value = $markup;
+				if($this->tfw_collapsed) $f->collapsed = Inputfield::collapsedYes;
+				$wrapper->insertAfter($f, $m_fields);
+			}
+
+			// Load CSS and JS assets
+			$this->loadAssets();
 		}
 	}
 
@@ -193,8 +284,82 @@ EOT;
 	 * @return Template|null
 	 */
 	protected function getTemplate() {
-		$template_id = (int) $this->wire('input')->post->id ?: (int) $this->wire('input')->get->id;
-		return $this->wire('templates')->get($template_id);
+		$template_id = (int) $this->wire()->input->post('id') ?: (int) $this->wire()->input->get('id');
+		return $this->wire()->templates->get($template_id);
+	}
+
+	/**
+	 * Apply field widths
+	 *
+	 * @param Fieldgroup $fieldgroup
+	 * @param array $data
+	 * @param int|null $matrix_type
+	 */
+	protected function applyFieldWidths(Fieldgroup $fieldgroup, $data, $matrix_type = null) {
+		foreach($data as $key => $value) {
+			$pieces = explode('-', $key);
+			$field_name = $pieces[1];
+			$col_width = (int) $value;
+			// Get field in template or matrix type context
+			if($matrix_type) {
+				$f = $fieldgroup->getFieldContext($field_name, "matrix$matrix_type");
+			} else {
+				$f = $fieldgroup->getFieldContext($field_name);
+			}
+			if(!$f || $f->columnWidth === $col_width || (!$f->columnWidth && $col_width === 100)) continue;
+			$f->columnWidth = $col_width;
+			if($matrix_type) {
+				$this->wire()->fields->saveFieldgroupContext($f, $fieldgroup, "matrix$matrix_type");
+			} else {
+				$this->wire()->fields->saveFieldgroupContext($f, $fieldgroup);
+			}
+		}
+	}
+
+	/**
+	 * Before ProcessTemplate::executeSave
+	 *
+	 * @param HookEvent $event
+	 */
+	protected function beforeTemplateSave(HookEvent $event) {
+		// Return if widths inputfield was not open
+		if(!$this->wire()->input->post('tfw_open')) return;
+		$template = $this->getTemplate();
+		if(!$template) return;
+		$data = $this->wire()->input->post->find('tfw-*');
+		$this->applyFieldWidths($template->fieldgroup, $data);
+	}
+
+	/**
+	 * Before ProcessField::executeSave
+	 *
+	 * @param HookEvent $event
+	 */
+	protected function beforeFieldSave(HookEvent $event) {
+		/** @var ProcessField $pf */
+		$pf = $event->object;
+		$field = $pf->getField();
+		if(!$field) return;
+		// If Repeater or FieldsetPage
+		if(in_array($field->type, ['FieldtypeRepeater', 'FieldtypeFieldsetPage'])) {
+			// Return if widths inputfield was not open
+			if(!$this->wire()->input->post('tfw_open')) return;
+			$template = $field->type->getRepeaterTemplate($field);
+			$data = $this->wire()->input->post->find('tfw-*');
+			$this->applyFieldWidths($template->fieldgroup, $data);
+		}
+		// If Repeater Matrix
+		elseif($field->type == 'FieldtypeRepeaterMatrix') {
+			$open_indicators = $this->wire()->input->post->find('tfw_open');
+			foreach($open_indicators as $key => $value) {
+				// Skip if widths inputfield was not open
+				if(!$value) continue;
+				$matrix_type = (int) substr($key, 9);
+				$template = $field->type->getMatrixTemplate($field);
+				$data = $this->wire()->input->post->find("tfw-*-$matrix_type");
+				$this->applyFieldWidths($template->fieldgroup, $data, $matrix_type);
+			}
+		}
 	}
 
 	/**
@@ -203,7 +368,7 @@ EOT;
 	 * @param InputfieldWrapper $inputfields
 	 */
 	public function getModuleConfigInputfields($inputfields) {
-		$modules = $this->wire('modules');
+		$modules = $this->wire()->modules;
 
 		/* @var InputfieldRadios $f */
 		$f = $modules->InputfieldRadios;

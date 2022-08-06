@@ -2,24 +2,37 @@
 
 	$(function() {
 
-		var $tfw_inputfield = $('#Inputfield_inputfield_widths');
+		var $tfw_inputfields = $('li[data-tfw]');
 
-		// Detect inputfield open/close and set hidden field value
-		var $visibility_input = $('#tfw_open');
-		$tfw_inputfield.on('closed', function() {
-			$visibility_input.val(0);
+		$tfw_inputfields.each(function() {
+			// Detect inputfield open/close and set hidden field value
+			var $visibility_input = $(this).find('.tfw-open');
+			$(this).on('closed', function() {
+				$visibility_input.val(0);
+			});
+			$(this).on('opened', function() {
+				$visibility_input.val(1);
+			});
 		});
-		$tfw_inputfield.on('opened', function() {
-			$visibility_input.val(1);
-		});
+
+		// Tabs
+		var $tabs = $('.tfw-tab');
+
+		// Show tab of given ID
+		function showTab(tab_id) {
+			var $tabs_content = $('.tfw-tab-content');
+			$tabs.add($tabs_content).removeClass('active');
+			$('#' + tab_id).addClass('active');
+			$tabs.filter('[data-tab="' + tab_id + '"]').addClass('active');
+		}
 
 		// Tab click
-		$('.tfw-tab').click(function() {
+		$tabs.click(function() {
 			showTab($(this).data('tab'));
 		});
 
 		// Adjust preview field widths on input change
-		$tfw_inputfield.find('input').on('change', function(event) {
+		$tfw_inputfields.find('input').on('change', function(event) {
 			var width = $(this).val();
 			$(this).closest('.tfw-item').css('width', width + '%');
 		});
@@ -41,26 +54,17 @@
 			if(e.keyCode !== 9) return;
 			var $tfw_item = $(this).closest('.tfw-item');
 			if(e.shiftKey && $tfw_item.is('.tfw-tab-wrap > .tfw-item:first-child')) {
-				$prev_tab = $(this).closest('.tfw-tab-content').prev();
+				var $prev_tab = $(this).closest('.tfw-tab-content').prev();
 				if($prev_tab.length) {
 					showTab($prev_tab.attr('id'));
 				}
 			} else if(!e.shiftKey && $tfw_item.is('.tfw-tab-wrap > .tfw-item:last-child')) {
-				$next_tab = $(this).closest('.tfw-tab-content').next();
+				var $next_tab = $(this).closest('.tfw-tab-content').next();
 				if($next_tab.length) {
 					showTab($next_tab.attr('id'));
 				}
 			}
 		});
-
-		// Show tab of given ID
-		function showTab(tab_id) {
-			var $tabs = $('.tfw-tab');
-			var $tabs_content = $('.tfw-tab-content');
-			$tabs.add($tabs_content).removeClass('active');
-			$('#' + tab_id).addClass('active');
-			$tabs.filter('[data-tab="' + tab_id + '"]').addClass('active');
-		}
 
 	});
 

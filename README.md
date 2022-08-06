@@ -2,7 +2,7 @@
 
 Adds a "Field widths" field to Edit Template that allows you to quickly set the widths of inputfields in the template. 
 
-Since v0.2.0 the module also adds a similar field to the settings of Edit Field for Repeater and Repeater Matrix allowing you to quickly set the widths of inputfields within the Repeater field, or within each Repeater Matrix type.
+Since v0.2.0 the module also adds a similar field to the settings of Edit Field for Repeater, FieldsetPage and Repeater Matrix allowing you to quickly set the widths of inputfields within the Repeater/FieldsetPage field, or within each Repeater Matrix type.
 
 Note: widths are only saved if the edit form is submitted with the "Field widths" field in an open (non-collapsed) state.
 

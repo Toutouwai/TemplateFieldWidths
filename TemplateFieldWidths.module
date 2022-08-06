@@ -24,7 +24,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 		return array(
 			'title' => 'Template Field Widths',
 			'version' => '0.2.0',
-			'summary' => 'Quickly set the widths of inputfields in a template, Repeater field, or Repeater Matrix field.',
+			'summary' => 'Quickly set the widths of inputfields in a template, Repeater field, FieldsetPage field, or Repeater Matrix field.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
 			'autoload' => 'template=admin',

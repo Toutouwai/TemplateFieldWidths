@@ -1,10 +1,10 @@
 # Template Field Widths
 
-Adds a "Field widths" field to Edit Template that allows you to quickly set the widths of inputfields in the template. 
+Adds a "Field widths" field to Edit Template that allows you to quickly set the widths and "required" state of inputfields in the template. 
 
-Since v0.2.0 the module also adds a similar field to the settings of Edit Field for Repeater, FieldsetPage and Repeater Matrix allowing you to quickly set the widths of inputfields within the Repeater/FieldsetPage field, or within each Repeater Matrix type.
+The module also adds a similar field to the settings of Edit Field for Repeater, FieldsetPage and Repeater Matrix allowing you to quickly set the widths and required state of inputfields within the Repeater/FieldsetPage field, or within each Repeater Matrix type.
 
-Note: widths are only saved if the edit form is submitted with the "Field widths" field in an open (non-collapsed) state.
+Note: widths/required are only saved if the edit form is submitted with the "Field widths" field in an open (non-collapsed) state.
 
 ### Edit template
 
@@ -19,9 +19,16 @@ Note: widths are only saved if the edit form is submitted with the "Field widths
 
 ![Repeater matrix field widths](https://user-images.githubusercontent.com/1538852/183234670-c3a59d29-c844-4f7d-9ec6-8031cd1b694b.png)
 
+### Required state
+
+Since v0.3.0 you can toggle the required state by clicking the asterisk icon.
+
+![Asterisks for required state](https://github.com/Toutouwai/TemplateFieldWidths/assets/1538852/ed8d54e9-6df3-4810-ac4a-783a4795f711)
+
+
 ## Why?
 
-When setting up a new template/repeater or trying out different field layouts I find it a bit slow and tedious to have to open each field individually in a modal just to set the width. This module speeds up the process.
+When setting up a new template/repeater or trying out different field layouts I find it a bit slow and tedious to have to open each field individually in a modal just to set the width or required state. This module speeds up the process.
 
 ## Config options
 

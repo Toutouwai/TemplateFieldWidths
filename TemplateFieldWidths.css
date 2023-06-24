@@ -42,29 +42,6 @@
   border-right: 4px solid #fff;
   border-bottom: 4px solid #fff;
   transition: width 0.3s; }
-  .Inputfields li[data-tfw] .tfw-item label {
-    display: block; }
-  .Inputfields li[data-tfw] .tfw-item .tfw-label {
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; }
-  .Inputfields li[data-tfw] .tfw-item .tfw-input {
-    margin-top: 2px !important; }
-    .Inputfields li[data-tfw] .tfw-item .tfw-input .orig-width {
-      display: inline-block;
-      line-height: 30px;
-      height: 30px;
-      padding-left: 5px;
-      vertical-align: top;
-      color: #8d939e; }
-    .Inputfields li[data-tfw] .tfw-item .tfw-input input[type=number] {
-      background-color: #fff !important;
-      padding: 2px 2px 2px 5px;
-      height: 30px;
-      width: 60px; }
-      .Inputfields li[data-tfw] .tfw-item .tfw-input input[type=number]:focus {
-        outline: none; }
   .Inputfields li[data-tfw] .tfw-item.ui-resizable-resizing {
     transition: none !important;
     background-color: rgba(172, 195, 225, 0.4); }
@@ -88,6 +65,41 @@
     height: 26px;
     width: 1px;
     background: #354b60; }
+.Inputfields li[data-tfw] .tfw-header {
+  display: flex; }
+  .Inputfields li[data-tfw] .tfw-header .tfw-label {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; }
+  .Inputfields li[data-tfw] .tfw-header .tfw-req {
+    flex-shrink: 0;
+    padding-left: 7px; }
+  .Inputfields li[data-tfw] .tfw-header .tfw-req-checkbox {
+    display: none; }
+    .Inputfields li[data-tfw] .tfw-header .tfw-req-checkbox:checked + .tfw-req-asterisk {
+      opacity: 1; }
+  .Inputfields li[data-tfw] .tfw-header .tfw-req-asterisk {
+    cursor: pointer;
+    opacity: 0.3; }
+    .Inputfields li[data-tfw] .tfw-header .tfw-req-asterisk:hover {
+      opacity: 0.5; }
+.Inputfields li[data-tfw] .tfw-input {
+  margin-top: 2px !important; }
+  .Inputfields li[data-tfw] .tfw-input .orig-width {
+    display: inline-block;
+    line-height: 30px;
+    height: 30px;
+    padding-left: 5px;
+    vertical-align: top;
+    color: #8d939e; }
+  .Inputfields li[data-tfw] .tfw-input input[type=number] {
+    background-color: #fff !important;
+    padding: 2px 2px 2px 5px;
+    height: 30px;
+    width: 60px; }
+    .Inputfields li[data-tfw] .tfw-input input[type=number]:focus {
+      outline: none; }
 .Inputfields li[data-tfw] .tfw-fieldset {
   display: flex;
   flex-wrap: wrap;

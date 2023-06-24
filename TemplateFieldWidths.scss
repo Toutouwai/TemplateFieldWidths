@@ -13,20 +13,28 @@
 	// Field items
 	.tfw-items-wrap { margin:0 -4px -4px 0; display:flex; flex-wrap:wrap; overflow:hidden; }
 	.tfw-item { float:left; flex-wrap:wrap; background-color:rgba(172,195,225,0.2); padding:3px 14px 8px 8px; max-width:100%; border-right:4px solid #fff; border-bottom:4px solid #fff; transition:width 0.3s;
-		label { display:block; }
-		.tfw-label { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-		.tfw-input { margin-top:2px !important;
-			.orig-width { display:inline-block; line-height:30px; height:30px; padding-left:5px; vertical-align:top; color:#8d939e; }
-			input[type=number] { background-color:#fff !important; padding:2px 2px 2px 5px; height:30px; width:60px;
-				&:focus { outline:none; }
-			}
-		}
 		// Drag resizing
 		&.ui-resizable-resizing { transition:none !important; background-color:rgba(172,195,225,0.4); }
 		.ui-resizable-e { position:absolute; cursor:e-resize; width:10px; right:5px; top:50%; height:40px; transform:translateY(-50%); border-right:1px solid #354b60; opacity:0.5;
 			&:hover { opacity:1; }
 		}
 		.ui-resizable-handle.ui-resizable-e::after { content:''; position:absolute; top:7px; right:3px; height:26px; width:1px; background:#354b60; }
+	}
+	.tfw-header { display:flex;
+		.tfw-label { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+		.tfw-req { flex-shrink:0; padding-left:7px; }
+		.tfw-req-checkbox { display:none;
+			&:checked + .tfw-req-asterisk { opacity:1; }
+		}
+		.tfw-req-asterisk { cursor:pointer; opacity:0.3;
+			&:hover { opacity:0.5; }
+		}
+	}
+	.tfw-input { margin-top:2px !important;
+		.orig-width { display:inline-block; line-height:30px; height:30px; padding-left:5px; vertical-align:top; color:#8d939e; }
+		input[type=number] { background-color:#fff !important; padding:2px 2px 2px 5px; height:30px; width:60px;
+			&:focus { outline:none; }
+		}
 	}
 	.tfw-fieldset { display:flex; flex-wrap:wrap; margin-top:8px; overflow:hidden; box-shadow:inset -4px -4px 0 0 #fff; border-top:4px solid #fff; border-left:4px solid #fff; }
 

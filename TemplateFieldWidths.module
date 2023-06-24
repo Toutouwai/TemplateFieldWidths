@@ -23,8 +23,8 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.2.0',
-			'summary' => 'Quickly set the widths of inputfields in a template, Repeater field, FieldsetPage field, or Repeater Matrix field.',
+			'version' => '0.3.0',
+			'summary' => 'Quickly set the widths and "required" state of inputfields in a template, Repeater field, FieldsetPage field, or Repeater Matrix field.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
 			'autoload' => 'template=admin',
@@ -96,14 +96,19 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 			$primary_identifier = $this->field_identifier === 'name' ? $f->name : ($f->label ?: $f->name) ;
 			if($is_fieldset) $primary_identifier = "<strong>$primary_identifier</strong>";
 			$secondary_identifier = $this->field_identifier === 'name' ? $f->label : $f->name;
+			$req_state = $f->required ? ' checked' : '';
 			$markup .= <<<EOT
-<div class='tfw-item' style='width:{$col_width}%'>
-	<label>
-		<span class='tfw-label' title='$secondary_identifier'>$primary_identifier</span>
-		<div class='tfw-input'>
-			<input id='$id' name='$id' type='number' min='10' max='100' value='$col_width'>{$orig_width_markup}
+<div class="tfw-item" style="width:{$col_width}%">
+		<span class="tfw-header">
+			<label for="$id" class="tfw-label" title="$secondary_identifier">$primary_identifier</label>
+			<label class="tfw-req">
+				<input type="checkbox" class="tfw-req-checkbox" name="$id-required"$req_state>
+				<i class="fa fa-asterisk tfw-req-asterisk"></i>
+			</label>
+		</span>
+		<div class="tfw-input">
+			<input id="$id" name="$id" type="number" min="10" max="100" value="$col_width">{$orig_width_markup}
 		</div>
-</label>
 EOT;
 			if($is_fieldset) {
 				// Open fieldset
@@ -121,7 +126,7 @@ EOT;
 	 * @param HookEvent $event
 	 */
 	protected function addProcessTemplateControls(HookEvent $event) {
-		/* @var InputfieldForm $form */
+		/** @var InputfieldForm $form */
 		$form = $event->return;
 		$template = $this->getTemplate();
 		$fieldgroup = $template->fieldgroup;
@@ -181,7 +186,7 @@ EOT;
 		// Close container
 		$markup .= "</div>";
 
-		/* @var InputfieldMarkup $f */
+		/** @var InputfieldMarkup $f */
 		$f = $this->wire()->modules->get('InputfieldMarkup');
 		$f->name = 'tfw_widths';
 		$f->wrapAttr('data-tfw', 1);
@@ -225,7 +230,7 @@ EOT;
 			$markup .= $this->fieldWidthsMarkup($fieldgroup, $fieldgroup);
 			$markup .= "</div>";
 
-			/* @var InputfieldMarkup $f */
+			/** @var InputfieldMarkup $f */
 			$f = $this->wire()->modules->get('InputfieldMarkup');
 			$f->name = 'tfw_widths';
 			$f->wrapAttr('data-tfw', 1);
@@ -262,7 +267,7 @@ EOT;
 				$markup .= $this->fieldWidthsMarkup($type_info['fields'], $template->fieldgroup, $type_info['type']);
 				$markup .= "</div>";
 
-				/* @var InputfieldMarkup $f */
+				/** @var InputfieldMarkup $f */
 				$f = $this->wire()->modules->get('InputfieldMarkup');
 				$f->name = "tfw_widths_{$type_info['type']}";
 				$f->wrapAttr('data-tfw', 1);
@@ -298,6 +303,8 @@ EOT;
 	protected function applyFieldWidths(Fieldgroup $fieldgroup, $data, $matrix_type = null) {
 		foreach($data as $key => $value) {
 			$pieces = explode('-', $key);
+			// Skip "required" values
+			if(end($pieces) === 'required') continue;
 			$field_name = $pieces[1];
 			$col_width = (int) $value;
 			// Get field in template or matrix type context
@@ -306,8 +313,20 @@ EOT;
 			} else {
 				$f = $fieldgroup->getFieldContext($field_name);
 			}
-			if(!$f || $f->columnWidth === $col_width || (!$f->columnWidth && $col_width === 100)) continue;
-			$f->columnWidth = $col_width;
+			if(!$f) continue;
+			// Update field width?
+			$update_width = true;
+			if($f->columnWidth === $col_width || (!$f->columnWidth && $col_width === 100)) $update_width = false;
+			if($update_width) $f->columnWidth = $col_width;
+			// Update field required state?
+			$id = $f->name;
+			if($matrix_type) $id .= "-$matrix_type";
+			$update_required = false;
+			$req = isset($data["tfw-$id-required"]);
+			if($req != $f->required) $update_required = true;
+			if($update_required) $f->required = $req;
+			// Skip if neither width nor required state need to be set
+			if(!$update_width && !$update_required) continue;
 			if($matrix_type) {
 				$this->wire()->fields->saveFieldgroupContext($f, $fieldgroup, "matrix$matrix_type");
 			} else {
@@ -356,7 +375,11 @@ EOT;
 				if(!$value) continue;
 				$matrix_type = (int) substr($key, 9);
 				$template = $field->type->getMatrixTemplate($field);
-				$data = $this->wire()->input->post->find("tfw-*-$matrix_type");
+				$data = $this->wire()->input->post->find("tfw-*");
+				foreach($data as $key => $value) {
+					$pieces = explode('-', $key);
+					if(!isset($pieces[2]) || $pieces[2] != $matrix_type) unset($data[$key]);
+				}
 				$this->applyFieldWidths($template->fieldgroup, $data, $matrix_type);
 			}
 		}
@@ -370,8 +393,8 @@ EOT;
 	public function getModuleConfigInputfields($inputfields) {
 		$modules = $this->wire()->modules;
 
-		/* @var InputfieldRadios $f */
-		$f = $modules->InputfieldRadios;
+		/** @var InputfieldRadios $f */
+		$f = $modules->get('InputfieldRadios');
 		$f_name = 'tfw_collapsed';
 		$f->name = $f_name;
 		$f->label = $this->_('Presentation of Template Field Widths field');
@@ -383,8 +406,8 @@ EOT;
 		$f->columnWidth = 40;
 		$inputfields->add($f);
 
-		/* @var InputfieldRadios $f */
-		$f = $modules->InputfieldRadios;
+		/** @var InputfieldRadios $f */
+		$f = $modules->get('InputfieldRadios');
 		$f_name = 'field_identifier';
 		$f->name = $f_name;
 		$f->label = $this->_('Field primary identifier');
@@ -395,8 +418,8 @@ EOT;
 		$f->columnWidth = 30;
 		$inputfields->add($f);
 
-		/* @var InputfieldCheckbox $f */
-		$f = $modules->InputfieldCheckbox;
+		/** @var InputfieldCheckbox $f */
+		$f = $modules->get('InputfieldCheckbox');
 		$f_name = 'show_original_width';
 		$f->name = $f_name;
 		$f->label = $this->_("Show each field's original width");

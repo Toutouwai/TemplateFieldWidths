@@ -108,3 +108,15 @@
   box-shadow: inset -4px -4px 0 0 #fff;
   border-top: 4px solid #fff;
   border-left: 4px solid #fff; }
+.Inputfields li[data-tfw] [data-type="FieldtypeFieldsetOpen"] > .tfw-header .tfw-req {
+  display: none; }
+.Inputfields li[data-tfw] [data-type="FieldtypeFieldsetGroup"] > .tfw-header .tfw-req {
+  display: none; }
+.Inputfields li[data-tfw] [data-type="FieldtypeFieldsetTabOpen"] {
+  padding-right: 8px !important; }
+  .Inputfields li[data-tfw] [data-type="FieldtypeFieldsetTabOpen"] > .tfw-header .tfw-req {
+    display: none; }
+  .Inputfields li[data-tfw] [data-type="FieldtypeFieldsetTabOpen"] > .tfw-input {
+    display: none; }
+  .Inputfields li[data-tfw] [data-type="FieldtypeFieldsetTabOpen"] > .ui-resizable-e {
+    display: none !important; }

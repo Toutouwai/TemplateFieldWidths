@@ -38,4 +38,16 @@
 	}
 	.tfw-fieldset { display:flex; flex-wrap:wrap; margin-top:8px; overflow:hidden; box-shadow:inset -4px -4px 0 0 #fff; border-top:4px solid #fff; border-left:4px solid #fff; }
 
+	// Field item types
+
+	// Fieldsets: hide asterisk button
+	[data-type="FieldtypeFieldsetOpen"] > .tfw-header .tfw-req { display:none; }
+	[data-type="FieldtypeFieldsetGroup"] > .tfw-header .tfw-req { display:none; }
+	// FieldsetTab (in repeater): hide asterisk button, width input, drag handle
+	[data-type="FieldtypeFieldsetTabOpen"] { padding-right:8px !important;
+		> .tfw-header .tfw-req { display:none; }
+		> .tfw-input { display:none; }
+		> .ui-resizable-e { display:none !important; }
+	}
+
 }

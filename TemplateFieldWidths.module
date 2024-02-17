@@ -23,7 +23,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Template Field Widths',
-			'version' => '0.3.1',
+			'version' => '0.3.2',
 			'summary' => 'Quickly set the widths and "required" state of inputfields in a template, Repeater field, FieldsetPage field, or Repeater Matrix field.',
 			'author' => 'Robin Sallis',
 			'icon' => 'arrows-h',
@@ -69,6 +69,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 	 * @param Fieldgroup $fieldgroup
 	 */
 	protected function fieldWidthsMarkup($fields, $fieldgroup, $matrix_type = null) {
+		$is_repeater = $this->wire()->process == 'ProcessField';
 		$markup = '';
 		foreach($fields as $field) {
 			// Close fieldset
@@ -83,7 +84,9 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 				$f = $fieldgroup->getFieldContext($field);
 			}
 			$col_width = $f->columnWidth ?: 100;
-			$is_fieldset = in_array($field->type, ['FieldtypeFieldsetOpen', 'FieldtypeFieldsetGroup']);
+			$fieldset_types = ['FieldtypeFieldsetOpen', 'FieldtypeFieldsetGroup'];
+			if($is_repeater) $fieldset_types[] = 'FieldtypeFieldsetTabOpen';
+			$is_fieldset = in_array($field->type, $fieldset_types);
 			// Use hyphens to separate pieces in the id/name attribute because PW field names cannot include hyphens
 			// This lets us explode on hyphens later to get the original pieces
 			$id = 'tfw-' . $f->name;
@@ -98,7 +101,7 @@ class TemplateFieldWidths extends WireData implements Module, ConfigurableModule
 			$secondary_identifier = $this->field_identifier === 'name' ? $f->label : $f->name;
 			$req_state = $f->required ? ' checked' : '';
 			$markup .= <<<EOT
-<div class="tfw-item" style="width:{$col_width}%">
+<div class="tfw-item" style="width:{$col_width}%" data-type="$field->type">
 		<span class="tfw-header">
 			<label for="$id" class="tfw-label" title="$secondary_identifier">$primary_identifier</label>
 			<label class="tfw-req">
